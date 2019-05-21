@@ -338,7 +338,7 @@ namespace sjtu {
                 int start = sta1.getval(trains[i]->order) - 1,end = sta2.getval(trains[i]->order) - 1;
                 int trstart = trains[i]->getStation(0)->start;
                 int ticketNum;
-                double price;
+                float price;
 
                 char time1[8], time2[8];
                 intToTime(trains[i]->getStation(start)->start % 1440, time1);
@@ -362,7 +362,7 @@ namespace sjtu {
                         if (ticketNum > trains[i]->getStation(j)->ticket[dateToInt(date)][k])
                             ticketNum = trains[i]->getStation(j)->ticket[dateToInt(date)][k];
                     }
-                    sprintf(ret + strlen(ret)," %s %d %6f",trains[i]->pricename[k],ticketNum,price);
+                    sprintf(ret + strlen(ret)," %s %d %f",trains[i]->pricename[k],ticketNum,price);
                 }
                 if (i != trains.size() - 1) {
                     sprintf(ret + strlen(ret), "\n");
@@ -454,7 +454,7 @@ namespace sjtu {
                                         train1->getStation(ord_start)->station_name,dat,
                                         time1,train1->getStation(ord_transfer1)->station_name,
                                         dat,time2);
-                                double price;
+                                float price;
                                 for (int p = 0;p < train1->price_num;++p){
                                     price = 0;
                                     for (int kk = ord_start + 1; kk <= ord_transfer1; kk++) {
@@ -517,7 +517,7 @@ namespace sjtu {
                 sprintf(ret, "0");
                 return;
             }
-            double price = val->buy(num, cur, stringToInt(user_id), hashid);
+            float price = val->buy(num, cur, stringToInt(user_id), hashid);
             if (price < 0) {
                 deleteTrain(val);
                 sprintf(ret, "0");
@@ -574,11 +574,11 @@ namespace sjtu {
                             val->getStation(rec.getEnd())->station_name, date, dt
                             );
                     for (int j = 0; j < val->price_num; j++) {
-                        double price = 0.0;
+                        float price = 0.0;
                         for (int k = rec.getStart() + 1; k <= rec.getEnd(); k++) {
                             price += val->getStation(k)->price[j];
                         }
-                        sprintf(tmp + strlen(tmp), "%s %d %lf ", val->pricename[j], j == rec.getType() ? rec.getQuantity() : 0, price);
+                        sprintf(tmp + strlen(tmp), "%s %d %f ", val->pricename[j], j == rec.getType() ? rec.getQuantity() : 0, price);
                     }
                     sprintf(tmp + strlen(tmp), "\n");
 

@@ -12,7 +12,7 @@
 namespace sjtu{
     class User_val{
     public:
-        char name[NAME_SIZE];
+        char name[USER_NAME_SIZE];
         char password[PASSWORD_SIZE];
         char email[EMAIL_SIZE];
         char phone[PHONE_SIZE];

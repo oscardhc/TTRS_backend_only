@@ -4,6 +4,8 @@
 
 #include "program.hpp"
 #include "utility.hpp"
+#include "station_val.hpp"
+#include "constant.hpp"
 
 char cmd[1000],ret[50000];
 
@@ -105,7 +107,7 @@ inline void test7() {
 }
 inline void test8() {
     freopen("./stdout.txt", "w", stdout);
-    freopen("./stderr.txt", "w", stderr);
+//    freopen("./stderr.txt", "w", stderr);
     freopen("../../../test_kit/8/1.in", "r", stdin);
     work();
     fprintf(stderr, "complete 1\n");
@@ -179,15 +181,19 @@ void realWork()
     close(rfd);
 }
 
-int main(){
-    work();
+int main(int argc, char** argv){
+//    test8();
+    if (argc > 1) {
+        test8();
+        realWork();
+    } else {
+        work();
+    }
 //    test6();
 //    test2();
 //    test1();
 //    test4();
 //    test5();
 //    test7();
-//    test8();
-//    realWork();
     return 0;
 }

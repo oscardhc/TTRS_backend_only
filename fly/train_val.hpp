@@ -18,7 +18,7 @@ namespace sjtu {
     struct Train_val {
     public:
         struct station {
-            double price[5];
+            float price[5];
             short arrive;
             short start;
             // stopover time can be calculated by arrive and start time
@@ -58,7 +58,7 @@ namespace sjtu {
                     char buff[20];
                     len = getNextWord(inp, buff);
                     inp += len;
-                    sscanf(buff, "%lf", &price[i]);
+                    sscanf(buff, "%f", &price[i]);
                 }
                 for (int i = 0; i <= 30; i++) {
                     for (int j = 0; j < price_num; j++) {
@@ -194,7 +194,7 @@ namespace sjtu {
             //TODO del ticket record
             return 1;
         }
-        double buy(int num, char *inp, int userid, int trainid) {
+        float buy(int num, char *inp, int userid, int trainid) {
             int date;
             char dateStr[DATE_SIZE];
             char sta1[LOCATION_SIZE];
@@ -227,7 +227,7 @@ namespace sjtu {
                 if (getStation(cnt2)->ticket[date][i] < num || ++cnt2 == station_num)
                     return -1.0;
             }
-            double price = 0;
+            float price = 0;
             for(int j = cnt1 + 1; j <= cnt2; ++j) {
                 if (getStation(j)->ticket[date][i] < num) {
                     return -1.0;
