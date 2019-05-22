@@ -9,7 +9,7 @@ namespace sjtu{
   const int MAXTICKET = 2000;
 
   const int NAME_SIZE = 41;
-  const int USER_NAME_SIZE = 41;
+  const int USER_NAME_SIZE = 41 - 24;
   const int PASSWORD_SIZE = 21;
   const int EMAIL_SIZE = 21;
   const int PHONE_SIZE = 21;

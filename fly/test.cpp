@@ -182,7 +182,6 @@ void realWork()
 }
 
 int main(int argc, char** argv){
-//    test8();
     if (argc > 1) {
         test8();
         realWork();

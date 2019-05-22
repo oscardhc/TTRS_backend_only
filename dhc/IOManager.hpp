@@ -18,7 +18,7 @@
 // 8K per page (There should be NO elements with sizes exceeding 8K)
 const int pageSize = 8192;
 // Bufferpool size: 8K * 128 = 1M
-const int bufferSize = 1350;
+const int bufferSize = 1430;
 const int hotListSize = 100;
 const int coldListSize = bufferSize - hotListSize;
 
@@ -28,7 +28,7 @@ namespace sjtu {
 
     class IOManager {
     private:
-        char tmp[pageSize << 2];
+        char tmp[pageSize];
         char pool[bufferSize][pageSize];
         int poolAge;
         int totalQuery, hitQuery;
