@@ -443,6 +443,7 @@ namespace sjtu {
                 return;
             }
             DataBase.getElement((char*)&sta1,offset1,STATION_SIZE,STATION);
+
             station_val sta2;
             int offset2 = stationTree.search(getID(loc2));
             if (offset2 < 0) {
@@ -451,81 +452,117 @@ namespace sjtu {
             }
             DataBase.getElement((char*)&sta2,offset2,STATION_SIZE,STATION);
             // traverse all train
-            for (int j = 0;j < cnt_train; ++j){
-                int ord_end = sta2.getval(j) - 1;
-                if (ord_end < 0)
+
+            for(int j = 0;j <= (cnt_train >> 5);++j) {
+                int bit_str = sta2.passby_train[j];
+                if (bit_str == 0)
                     continue;
-                else{
-                    int offset_train2 = getTrainID(j);
-//                    Train_val train2;
-//                    DataBase.getElement((char*)&train2,offset_train2,TRAIN_SIZE);
-                    Train_val *train2 = createTrainWithOffset(offset_train2);
-                    int i = 0;
-                    for (;i < len; ++i){
-                        if(train2->catalog[0] == catalog[i])
+                else {
+                    for (int bit = 0; bit < 32; ++bit) {
+                        if (!bit_str)
                             break;
-                    }
-                    if(i == len)
-                        continue;
-                    for (int k = 0;k < ord_end;++k){
-                        int loc_transfer = getID(train2->getStation(k)->station_name);
-                        station_val sta_transfer;
-                        int offset_station_transfer = stationTree.search(loc_transfer);
-                        DataBase.getElement((char*)&sta_transfer,offset_station_transfer,STATION_SIZE,STATION);
-                        for(int l = 0;l < cnt_train;++l){
-                            int ord_start = sta1.getval(l) - 1, ord_transfer1 = sta_transfer.getval(l) - 1;
-                            int ord_transfer2 = k;
-                            if(ord_start < 0 || ord_transfer1 < 0 ||
-                               ord_start > ord_transfer1)
-                                continue;
-//                            Train_val train1;
-                            int offset_train1 = getTrainID(l);
-                            Train_val *train1 = createTrainWithOffset(offset_train1);
-//                            DataBase.getElement((char*)&train1,offset_train1,TRAIN_SIZE);
-                            short transfer_arrive = train1->getStation(ord_transfer1)->arrive;
-                            short transfer_start = train2->getStation(ord_transfer2)->start;
-                            if (transfer_arrive > transfer_start)
-                                continue;
-                            int start = train1->getStation(ord_start)->start;
-                            int arrive = train2->getStation(ord_end)->arrive;
-                            int whole_time =  arrive - start;
-
-                            if(whole_time < minTime){
-//                                info = nullptr;
-                                char time1[TIME_SIZE],time2[TIME_SIZE];
-                                intToTime(start,time1);
-                                intToTime(transfer_arrive,time2);
-                                sprintf(info + strlen(info),"%s %s %s %s %s %s %s ",train1->trainID,
-                                        train1->getStation(ord_start)->station_name,dat,
-                                        time1,train1->getStation(ord_transfer1)->station_name,
-                                        dat,time2);
-                                float price;
-                                for (int p = 0;p < train1->price_num;++p){
-                                    price = 0;
-                                    for (int kk = ord_start + 1; kk <= ord_transfer1; kk++) {
-                                        price += train1->getStation(kk)->price[p];
+                        if (!(bit_str & 1)) {
+                            bit_str >>= 1;
+                            continue;
+                        }
+                        int offset_train2 = getTrainID((j << 5) + bit);
+                        Train_val *train2 = createTrainWithOffset(offset_train2);
+                        int i = 0;
+                        for (; i < len; ++i) {//check catalog
+                            if (train2->catalog[0] == catalog[i])
+                                break;
+                        }
+                        if (i == len)
+                            continue;
+                        int k;
+                        for (k = 0; k < train2->station_num; ++k) {
+                            if (strcmp(train2->_stations[k].station_name, loc2) == 0)
+                                break;
+                        }
+//                        printf("~ %d\n", k);
+                        int ord_end = k;
+                        for (k = 0; k < ord_end; k++) {
+                            char *transfer_loc = train2->_stations[k].station_name;//TODO I'm not sure
+                            int loc_transfer = getID(transfer_loc);
+                            station_val sta_transfer;
+                            int offset_station_transfer = stationTree.search(loc_transfer);
+                            DataBase.getElement((char*)&sta_transfer, offset_station_transfer, STATION_SIZE, STATION);
+                            for (int l = 0; l < cnt_train; ++l) {
+                                if (!sta1.getval(l)) continue;
+//                                int ord_start = sta1.getval(l);
+//                                int ord_transfer1 = sta1.getval(l);
+                                int ord_transfer2 = k;
+//                                if (!(ord_start && ord_transfer1))//check train1 pass loc1 and loctransfer
+//                                    continue;
+                                int offset_train1 = getTrainID(l);
+                                Train_val *train1 = createTrainWithOffset(offset_train1);
+                                int ord_start = -1;
+                                int ord_transfer1 = -1;
+                                for (int u = 0; u < train1->station_num; ++u) {
+                                    if (strcmp(train1->_stations[u].station_name, loc1) == 0) {
+                                        ord_start = u;
                                     }
-                                    sprintf(info + strlen(info),"%s %d %f ",train1->pricename[p],train1->getSurplus(ord_start,ord_transfer1,date,i),
-                                            price);
+                                    if (strcmp(train1->_stations[u].station_name, transfer_loc) == 0) {
+                                        if (ord_start == -1)
+                                            break;
+                                        ord_transfer1 = u;
+                                        break;
+                                    }
                                 }
-                                sprintf(info + strlen(info),"\n");
-
-                                intToTime(transfer_start,time1);
-                                intToTime(arrive,time2);
-                                sprintf(info + strlen(info),"%s %s %s %s %s %s %s ",train2->trainID,
-                                        train2->getStation(ord_transfer2)->station_name,dat,
-                                        time1,train2->getStation(ord_end)->station_name,
-                                        dat,time2);
-                                for (int p = 0;p < train1->price_num;++p){
-//                                    price = train2->getStation(ord_end)->price[p] - train1->getStation(ord_transfer2)->price[p];
-                                    price = 0;
-                                    for (int kk = ord_transfer2 + 1; kk <= ord_end; kk++) {
-                                        price += train2->getStation(kk)->price[p];
+                                if (ord_start == -1 || ord_transfer1 == -1)
+                                    continue;
+//                                printf(">>> %d %d %d %d\n", ord_start, ord_transfer1, ord_transfer2, ord_end);
+                                short transfer_arrive = train1->getStation(ord_transfer1)->arrive;
+                                short transfer_start = train2->getStation(ord_transfer2)->start;
+                                if (transfer_arrive > transfer_start)
+                                    continue;
+                                int start = train1->getStation(ord_start)->start;
+                                int arrive = train2->getStation(ord_end)->arrive;
+                                int whole_time = arrive - start;
+                                if (whole_time < minTime) {
+//                                info = nullptr;
+                                    char time1[TIME_SIZE], time2[TIME_SIZE];
+                                    intToTime(start, time1);
+                                    intToTime(transfer_arrive, time2);
+                                    sprintf(info + strlen(info), "%s %s %s %s %s %s %s ", train1->trainID,
+                                            train1->getStation(ord_start)->station_name, dat,
+                                            time1, train1->getStation(ord_transfer1)->station_name,
+                                            dat, time2);
+                                    float price;
+                                    for (int p = 0; p < train1->price_num; ++p) {
+                                        price = 0;
+                                        for (int kk = ord_start + 1; kk <= ord_transfer1; kk++) {
+                                            price += train1->getStation(kk)->price[p];
+                                        }
+                                        sprintf(info + strlen(info),
+                                                "%s %d %f ",
+                                                train1->pricename[p],
+                                                train1->getSurplus(ord_start, ord_transfer1, date, i),
+                                                price);
                                     }
-                                    sprintf(info + strlen(info),"%s %d %f ",train1->pricename[p],train1->getSurplus(ord_transfer2,ord_end,date,i),
-                                            price);
+                                    sprintf(info + strlen(info), "\n");
+
+                                    intToTime(transfer_start, time1);
+                                    intToTime(arrive, time2);
+                                    sprintf(info + strlen(info), "%s %s %s %s %s %s %s ", train2->trainID,
+                                            train2->getStation(ord_transfer2)->station_name, dat,
+                                            time1, train2->getStation(ord_end)->station_name,
+                                            dat, time2);
+                                    for (int p = 0; p < train1->price_num; ++p) {
+//                                    price = train2->getStation(ord_end)->price[p] - train1->getStation(ord_transfer2)->price[p];
+                                        price = 0;
+                                        for (int kk = ord_transfer2 + 1; kk <= ord_end; kk++) {
+                                            price += train2->getStation(kk)->price[p];
+                                        }
+                                        sprintf(info + strlen(info),
+                                                "%s %d %f ",
+                                                train2->pricename[p],
+                                                train2->getSurplus(ord_transfer2, ord_end, date, i),
+                                                price);
+                                    }
                                 }
                             }
+                            bit_str >>= 1;
                         }
                     }
                 }
