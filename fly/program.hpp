@@ -9,11 +9,12 @@
 #include "utility.hpp"
 #include <cstring>
 #include <algorithm>
-#include <iostream>
+//#include <iostream>
 #include "../whj/bpt_new.hpp"
 #include "../dhc/IOManager.hpp"
 #include <vector>
 #include "record.hpp"
+#include "../dhc/map.hpp"
 
 namespace sjtu {
     typedef int ID;
@@ -45,6 +46,7 @@ namespace sjtu {
             }
         };
         ~Program() {
+            fprintf(stderr, "TT %d HT %d\n", _tt, _ht);
             DataBase.setElement((char*)(&userCurId), sizeof(int) * 9, sizeof(int));
             DataBase.setElement((char*)(&cnt_train), sizeof(int) * 10, sizeof(int));
 //            fprintf(stderr, ">>>>>> %lf %lf %lf     %lf\n", 1. * mdf / 1000000, 1. * qry / 1000000, 1. * exe / 1000000, 1. * clock() / 1000000);
@@ -126,12 +128,42 @@ namespace sjtu {
             return;
         }
 
-        inline int  getTrainID(int index) {
+        inline int getTrainID(int index) {
             int id;
             DataBase.getElement((char*)&id, sizeof(int) + index * sizeof(int) , sizeof(int), TRID);
 //            printf("get %d %d\n", index, id);
             return id;
         }
+
+        inline void setPri(int index, unsigned int l) {
+//            if (l == )
+//            fprintf(stderr, "%d", l);
+            int a = index >> 4;
+            int b = index & 15;
+            while (quickPri.size() < a) quickPri.push_back(0u);
+            quickPri[a] &= (~0u - (3u << (b << 1)));
+            quickPri[a] += (l << (b << 1));
+            User_val tmp;
+            DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
+            tmp.setPrivilege(l);
+            DataBase.setElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
+        }
+
+        inline int getPri(int index) {
+            _tt++, _ht++;
+            int a = index >> 4;
+            int b = index & 15;
+            while (quickPri.size() < a) quickPri.push_back(0u);
+            if ((quickPri[a] >> (b << 1) & 3u) == 0) {
+                _ht--;
+                User_val tmp;
+                DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
+                quickPri[a] &= (~0u - (3u << (b << 1)));
+                quickPri[a] += (tmp.getPrivilege() << (b << 1));
+            }
+            return quickPri[a] >> (b << 1) & 3u;
+        }
+
 
 
     private:
@@ -144,6 +176,9 @@ namespace sjtu {
 //        BPlusTree userTree;
         BPlusTree trainTree;
         BPlusTree stationTree;
+        std::vector<unsigned int> quickPri;
+        int _tt = 0, _ht = 0;
+
 
     public:
 
@@ -224,30 +259,21 @@ namespace sjtu {
             cur += idlen;
             int ID1 = stringToInt(id1), ID2 = stringToInt(id2);
 
-            User_val val1;
-            int offset1 = calculateOffset(ID1, userCurId);
-            if (offset1 == -1) {
+            if (ID1 > userCurId || ID2 > userCurId) {
                 sprintf(ret, "0");
                 return;
             }
-            DataBase.getElement((char*)&val1,offset1,USER_SIZE,USER);
-            p_id1 = val1.getPrivilege();
-            if (p_id1 == 1 || p_id1 == 0) {
+
+            int pr1 = getPri(ID1);
+            if (pr1 ^ 2) {
                 sprintf(ret, "0");
                 return;
             }
-            idlen = skipWhiteSpace(cur);
-            cur += idlen;
+
             sscanf(cur, "%d", &privil);
-            User_val val2;
-            int offset2 = calculateOffset(ID2, userCurId);
-            if (offset2 == -1) {
-                sprintf(ret, "0");
-                return;
-            }
-            DataBase.getElement((char*)&val2,offset2,USER_SIZE,USER);
-            p_id2 = val2.getPrivilege();
-            if (p_id2 == 2) {
+
+            int pr2 = getPri(ID2);
+            if (pr2 == 2) {
                 if (privil == 2) {
                     sprintf(ret, "1");
                     return;
@@ -255,16 +281,56 @@ namespace sjtu {
                     sprintf(ret, "0");
                     return;
                 }
-            }
-            if (p_id2 == 1) {
+            } else {
                 if (privil == 2) {
-                    val2.setPrivilege(2);
-                    DataBase.setElement((char*)&val2,offset2,USER_SIZE,USER);
+                    setPri(ID2, 2);
                 }
                 sprintf(ret, "1");
                 return;
             }
-            sprintf(ret, "0");
+
+
+//            User_val val1;
+//            int offset1 = calculateOffset(ID1, userCurId);
+//            if (offset1 == -1) {
+//                sprintf(ret, "0");
+//                return;
+//            }
+//            DataBase.getElement((char*)&val1,offset1,USER_SIZE,USER);
+//            p_id1 = val1.getPrivilege();
+//            if (p_id1 == 1 || p_id1 == 0) {
+//                sprintf(ret, "0");
+//                return;
+//            }
+//            idlen = skipWhiteSpace(cur);
+//            cur += idlen;
+//            sscanf(cur, "%d", &privil);
+//            User_val val2;
+//            int offset2 = calculateOffset(ID2, userCurId);
+//            if (offset2 == -1) {
+//                sprintf(ret, "0");
+//                return;
+//            }
+//            DataBase.getElement((char*)&val2,offset2,USER_SIZE,USER);
+//            p_id2 = val2.getPrivilege();
+//            if (p_id2 == 2) {
+//                if (privil == 2) {
+//                    sprintf(ret, "1");
+//                    return;
+//                } else {
+//                    sprintf(ret, "0");
+//                    return;
+//                }
+//            }
+//            if (p_id2 == 1) {
+//                if (privil == 2) {
+//                    val2.setPrivilege(2);
+//                    DataBase.setElement((char*)&val2,offset2,USER_SIZE,USER);
+//                }
+//                sprintf(ret, "1");
+//                return;
+//            }
+//            sprintf(ret, "0");
         }
 
         /*Ticket word*/
