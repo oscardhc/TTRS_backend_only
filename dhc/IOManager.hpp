@@ -154,7 +154,7 @@ namespace sjtu {
             readFromDisk(node);
             return node;
         }
-        Node* getBufferId(int index) {
+        Node* getBufferId(int index, int flag) {
             totalQuery++;
 //            auto it = idxMap.find(index);
             Node* node = idxMap.search(index);
@@ -162,7 +162,7 @@ namespace sjtu {
             if (node != nullptr) {
                 hitQuery++;
 //                Node* node = it->second;
-                moveToFront(node);
+                if (flag == 0) moveToFront(node);
                 return node;
             } else {
                 Node* node = getAvailableMemory(index);
@@ -170,29 +170,30 @@ namespace sjtu {
             }
         }
         void getElement(char *t, int offset, int elementSize, FOR_FILE nFile = BPT) {
+            int flag = nFile == USER;
             int beginIndex = offset / pageSize;
             int pagePosition = offset % pageSize;
             int pageLeft = pageSize - pagePosition;
             if (pageLeft >= elementSize) {
-                Node *poolid = getBufferId(beginIndex * 10 + nFile);
+                Node *poolid = getBufferId(beginIndex * 10 + nFile, flag);
                 memcpy(t, pool[poolid->value] + pagePosition, elementSize);
             } else if (elementSize <= 8192 + pageLeft) {
-                Node *poolid1 = getBufferId(beginIndex * 10 + nFile);
-                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile);
+                Node *poolid1 = getBufferId(beginIndex * 10 + nFile, flag);
+                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile, flag);
                 memcpy(t, pool[poolid1->value] + pagePosition, pageLeft);
                 memcpy(t + pageLeft, pool[poolid2->value], elementSize - pageLeft);
             } else if (elementSize <= 8192 * 2 + pageLeft) {
-                Node *poolid1 = getBufferId(beginIndex * 10 + nFile);
-                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile);
-                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile);
+                Node *poolid1 = getBufferId(beginIndex * 10 + nFile, flag);
+                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile, flag);
+                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile, flag);
                 memcpy(t, pool[poolid1->value] + pagePosition, pageLeft);
                 memcpy(t + pageLeft, pool[poolid2->value], 8192);
                 memcpy(t + pageLeft + 8192, pool[poolid3->value], elementSize - pageLeft - 8192);
             } else {
-                Node *poolid1 = getBufferId(beginIndex * 10 + nFile);
-                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile);
-                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile);
-                Node *poolid4 = getBufferId((beginIndex + 3) * 10 + nFile);
+                Node *poolid1 = getBufferId(beginIndex * 10 + nFile, flag);
+                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile, flag);
+                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile, flag);
+                Node *poolid4 = getBufferId((beginIndex + 3) * 10 + nFile, flag);
                 memcpy(t, pool[poolid1->value] + pagePosition, pageLeft);
                 memcpy(t + pageLeft, pool[poolid2->value], 8192);
                 memcpy(t + pageLeft + 8192, pool[poolid3->value], 8192);
@@ -205,26 +206,27 @@ namespace sjtu {
             return fileSize[nFile] - elementSize;
         }
         void setElement(char *t, int offset, int elementSize, FOR_FILE nFile = BPT) {
+            int flag = nFile == USER;
             int beginIndex = offset / pageSize;
             int pagePosition = offset % pageSize;
             int pageLeft = pageSize - pagePosition;
 //            if (nFile == TRAIN) fprintf(stderr, "SET %d %d %d   %d [%d]  %d %d\n", offset, elementSize, nFile, *(int*)t, *((int*)(&pool[0][948])), pagePosition, pageLeft);
             if (pageLeft >= elementSize) {
-                Node* poolid = getBufferId(beginIndex * 10 + nFile);
+                Node* poolid = getBufferId(beginIndex * 10 + nFile, flag);
                 memcpy(pool[poolid->value] + pagePosition, t, elementSize);
 //                if (nFile == TRAIN) fprintf(stderr, "- %d %d\n", beginIndex, poolid->value);
                 poolid->isEdited = true;
             } else if (elementSize <= 8192 + pageLeft){
-                Node *poolid1 = getBufferId(beginIndex * 10 + nFile);
-                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile);
+                Node *poolid1 = getBufferId(beginIndex * 10 + nFile, flag);
+                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile, flag);
                 memcpy(pool[poolid1->value] + pagePosition, t, pageLeft);
                 memcpy(pool[poolid2->value], t + pageLeft, elementSize - pageLeft);
                 poolid1->isEdited = true;
                 poolid2->isEdited = true;
             } else  if (elementSize <= 8192 + 8192 + pageLeft) {
-                Node *poolid1 = getBufferId(beginIndex * 10 + nFile);
-                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile);
-                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile);
+                Node *poolid1 = getBufferId(beginIndex * 10 + nFile, flag);
+                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile, flag);
+                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile, flag);
                 memcpy(pool[poolid1->value] + pagePosition, t, pageLeft);
                 memcpy(pool[poolid2->value], t + pageLeft, 8192);
                 memcpy(pool[poolid3->value], t + pageLeft + 8192, elementSize - pageLeft - 8192);
@@ -232,10 +234,10 @@ namespace sjtu {
                 poolid2->isEdited = true;
                 poolid3->isEdited = true;
             } else {
-                Node *poolid1 = getBufferId(beginIndex * 10 + nFile);
-                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile);
-                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile);
-                Node *poolid4 = getBufferId((beginIndex + 3) * 10 + nFile);
+                Node *poolid1 = getBufferId(beginIndex * 10 + nFile, flag);
+                Node *poolid2 = getBufferId((beginIndex + 1) * 10 + nFile, flag);
+                Node *poolid3 = getBufferId((beginIndex + 2) * 10 + nFile, flag);
+                Node *poolid4 = getBufferId((beginIndex + 3) * 10 + nFile, flag);
                 memcpy(pool[poolid1->value] + pagePosition, t, pageLeft);
                 memcpy(pool[poolid2->value], t + pageLeft, 8192);
                 memcpy(pool[poolid3->value], t + pageLeft + 8192, 8192);
