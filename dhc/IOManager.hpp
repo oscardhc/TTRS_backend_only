@@ -118,7 +118,6 @@ namespace sjtu {
                 truncate(filename, fileSize[i]);
             }
             fprintf(stderr, "TOTAL %u HIT %u RATIO %lf\n", totalQuery, hitQuery, 1.0 * hitQuery / totalQuery);
-            fprintf(stderr, "time used: %lf s\n", 1. * clock() / 1000000);
         }
         void flushToDisk(Node* node) {
             int nfile = node->index % 10, idx = node->index / 10;

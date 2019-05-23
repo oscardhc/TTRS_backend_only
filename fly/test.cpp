@@ -12,13 +12,8 @@ char cmd[1000],ret[50000];
 void work() {
     sjtu::Program prog;
     while (1) {
-        fgets(cmd, 200, stdin);
-        cmd[strlen(cmd) - 1] = 0;
-//        puts(cmd);
-//        fprintf(stderr, "%s\n", cmd);
-        int _t = clock();
+        sjtu::myget(cmd);
         prog.exec(cmd, ret);
-        sjtu::exe += (clock() - _t);
         puts(ret);
         if (strcmp(cmd, "exit") == 0) break;
     }

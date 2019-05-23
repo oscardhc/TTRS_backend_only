@@ -105,6 +105,17 @@ namespace sjtu{
         if (index < userCurId) return sizeof(int) + (index - 2019) * USER_SIZE;
         else return -1;
     }
+    char* myget(char* str) {
+        while (1) {
+            *str = getchar();
+            if (*str == '\n') {
+                *str = 0;
+                return str;
+            } else {
+                str++;
+            }
+        }
+    }
 
 
 }

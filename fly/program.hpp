@@ -46,7 +46,6 @@ namespace sjtu {
             }
         };
         ~Program() {
-            fprintf(stderr, "TT %d HT %d\n", _tt, _ht);
             DataBase.setElement((char*)(&userCurId), sizeof(int) * 9, sizeof(int));
             DataBase.setElement((char*)(&cnt_train), sizeof(int) * 10, sizeof(int));
 //            fprintf(stderr, ">>>>>> %lf %lf %lf     %lf\n", 1. * mdf / 1000000, 1. * qry / 1000000, 1. * exe / 1000000, 1. * clock() / 1000000);
@@ -74,17 +73,13 @@ namespace sjtu {
                 execute_login();
                 return;
             } else if (strcmp(word, "query_profile") == 0) {
-                int _t = clock();
                 execute_queryProfile();
-                qry += (clock() - _t);
                 return;
             } else if (strcmp(word, "modify_profile") == 0) {
                 execute_modifyProfile();
                 return;
             } else if (strcmp(word, "modify_privilege") == 0) {
-                int _t = clock();
                 execute_modifyPrivilege();
-                mdf += (clock() - _t);
                 return;
             }
                 /*Ticket command:*/
@@ -150,12 +145,10 @@ namespace sjtu {
         }
 
         inline int getPri(int index) {
-            _tt++, _ht++;
             int a = index >> 4;
             int b = index & 15;
             while (quickPri.size() < a) quickPri.push_back(0u);
             if ((quickPri[a] >> (b << 1) & 3u) == 0) {
-                _ht--;
                 User_val tmp;
                 DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
                 quickPri[a] &= (~0u - (3u << (b << 1)));
@@ -177,11 +170,9 @@ namespace sjtu {
         BPlusTree trainTree;
         BPlusTree stationTree;
         std::vector<unsigned int> quickPri;
-        int _tt = 0, _ht = 0;
 
 
     public:
-
         /*User word:*/
         void execute_register() {
 //            printf("--\n");
@@ -264,28 +255,33 @@ namespace sjtu {
                 return;
             }
 
+
             int pr1 = getPri(ID1);
             if (pr1 ^ 2) {
                 sprintf(ret, "0");
                 return;
             }
 
-            sscanf(cur, "%d", &privil);
+//            sscanf(cur, "%d", &privil);
+            privil = *(cur+1) - '0';
 
             int pr2 = getPri(ID2);
             if (pr2 == 2) {
                 if (privil == 2) {
-                    sprintf(ret, "1");
+                    ret[0] = '1';
+                    ret[1] = 0;
                     return;
                 } else {
-                    sprintf(ret, "0");
+                    ret[0] = '0';
+                    ret[1] = 0;
                     return;
                 }
             } else {
                 if (privil == 2) {
                     setPri(ID2, 2);
                 }
-                sprintf(ret, "1");
+                ret[0] = '1';
+                ret[1] = 0;
                 return;
             }
 
