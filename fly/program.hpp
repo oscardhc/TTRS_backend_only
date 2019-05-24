@@ -130,9 +130,9 @@ namespace sjtu {
         inline void setPri(int index, unsigned int l) {
             int a = index >> 4;
             int b = index & 15;
-            while (quickPri.size() <= a) quickPri.push_back(0u);
-            quickPri[a] &= (~0u - (3u << (b << 1)));
-            quickPri[a] += (l << (b << 1));
+            while (quickPri->size() <= a) quickPri->push_back(0u);
+            quickPri->at(a) &= (~0u - (3u << (b << 1)));
+            quickPri->at(a) += (l << (b << 1));
             User_val tmp;
             DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
             tmp.setPrivilege(l);
@@ -144,20 +144,22 @@ namespace sjtu {
             int b = index & 15;
             if (!priInited) {
                 int _a = userCurId >> 4;
+                fprintf(stderr, "~ %d\n", _a);
                 priInited = true;
-                quickPri = sjtu::vector<unsigned int>(_a + 1, _a + 10);
-                for (int i = 0; i < _a; i++) {
-                    quickPri[i] = 0u;
+                quickPri = new sjtu::vector<unsigned int>(0, _a + 10);
+                for (int i = 0; i <= _a; i++) {
+                    quickPri->push_back(0u);
                 }
+                fprintf(stderr, "> %d\n", quickPri->size());
             }
-            while (quickPri.size() <= a) quickPri.push_back(0u);
-            if ((quickPri[a] >> (b << 1) & 3u) == 0) {
+            while (quickPri->size() <= a) quickPri->push_back(0u);
+            if ((quickPri->at(a) >> (b << 1) & 3u) == 0) {
                 User_val tmp;
                 DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
-                quickPri[a] &= (~0u - (3u << (b << 1)));
-                quickPri[a] += (tmp.getPrivilege() << (b << 1));
+                quickPri->at(a) &= (~0u - (3u << (b << 1)));
+                quickPri->at(a) += (tmp.getPrivilege() << (b << 1));
             }
-            return quickPri[a] >> (b << 1) & 3u;
+            return quickPri->at(a) >> (b << 1) & 3u;
         }
 
 
@@ -173,7 +175,7 @@ namespace sjtu {
 //        BPlusTree userTree;
         BPlusTree trainTree;
         BPlusTree stationTree;
-        sjtu::vector<unsigned int> quickPri;
+        sjtu::vector<unsigned int> *quickPri;
 
 
     public:
