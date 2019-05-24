@@ -142,6 +142,14 @@ namespace sjtu {
         inline int getPri(int index) {
             int a = index >> 4;
             int b = index & 15;
+            if (!priInited) {
+                int _a = userCurId >> 4;
+                priInited = true;
+                quickPri = sjtu::vector<unsigned int>(_a + 1, _a + 10);
+                for (int i = 0; i < _a; i++) {
+                    quickPri[i] = 0u;
+                }
+            }
             while (quickPri.size() <= a) quickPri.push_back(0u);
             if ((quickPri[a] >> (b << 1) & 3u) == 0) {
                 User_val tmp;
@@ -161,6 +169,7 @@ namespace sjtu {
 //        int trainID[MAX_TRAIN_NUM];
         int cnt_train = 0;
         int userCurId;
+        bool priInited = false;
 //        BPlusTree userTree;
         BPlusTree trainTree;
         BPlusTree stationTree;
