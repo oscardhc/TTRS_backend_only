@@ -8,13 +8,12 @@
 #include "user_key.hpp"
 #include "utility.hpp"
 #include <cstring>
-#include <algorithm>
 //#include <iostream>
 #include "../whj/bpt_new.hpp"
 #include "../dhc/IOManager.hpp"
-#include <vector>
 #include "record.hpp"
 #include "../dhc/map.hpp"
+#include "vector.hpp"
 
 namespace sjtu {
     typedef int ID;
@@ -48,7 +47,6 @@ namespace sjtu {
         ~Program() {
             DataBase.setElement((char*)(&userCurId), sizeof(int) * 9, sizeof(int));
             DataBase.setElement((char*)(&cnt_train), sizeof(int) * 10, sizeof(int));
-//            fprintf(stderr, ">>>>>> %lf %lf %lf     %lf\n", 1. * mdf / 1000000, 1. * qry / 1000000, 1. * exe / 1000000, 1. * clock() / 1000000);
         };
 
         inline void exec(char *_cmd, char *_ret) {
@@ -57,7 +55,6 @@ namespace sjtu {
             int len = strlen(cmd);
             char word[30];
             commandLength = getNextWord(cmd, word);
-//            printf("cmd is *%s*\n", word);
             if (strcmp(word, "exit") == 0) {
                 sprintf(ret, "BYE");
                 return;
@@ -131,11 +128,9 @@ namespace sjtu {
         }
 
         inline void setPri(int index, unsigned int l) {
-//            if (l == )
-//            fprintf(stderr, "%d", l);
             int a = index >> 4;
             int b = index & 15;
-            while (quickPri.size() < a) quickPri.push_back(0u);
+            while (quickPri.size() <= a) quickPri.push_back(0u);
             quickPri[a] &= (~0u - (3u << (b << 1)));
             quickPri[a] += (l << (b << 1));
             User_val tmp;
@@ -147,7 +142,7 @@ namespace sjtu {
         inline int getPri(int index) {
             int a = index >> 4;
             int b = index & 15;
-            while (quickPri.size() < a) quickPri.push_back(0u);
+            while (quickPri.size() <= a) quickPri.push_back(0u);
             if ((quickPri[a] >> (b << 1) & 3u) == 0) {
                 User_val tmp;
                 DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
@@ -169,7 +164,7 @@ namespace sjtu {
 //        BPlusTree userTree;
         BPlusTree trainTree;
         BPlusTree stationTree;
-        std::vector<unsigned int> quickPri;
+        sjtu::vector<unsigned int> quickPri;
 
 
     public:
@@ -353,7 +348,6 @@ namespace sjtu {
             int hash1 = getID(loc1), hash2 = getID(loc2);//hashID of loc
             int offset1 = stationTree.search(hash1);
             int offset2 = stationTree.search(hash2);
-//            fprintf(stderr, "off %d %d       %d %d\n", hash1, offset1, hash2, offset2);
             station_val sta1,sta2;
             DataBase.getElement((char*)&sta1,offset1,STATION_SIZE,STATION);
             DataBase.getElement((char*)&sta2,offset2,STATION_SIZE,STATION);
@@ -361,7 +355,9 @@ namespace sjtu {
             int offset;
             int pos1,pos2;//loc1's num in the train
 
-            std::vector<Train_val*> trains;
+//            std::vector<Train_val*> trains;
+            sjtu::vector<Train_val*> trains;
+
             for (int i = 0;i < 186; ++i){
                 unsigned int bit = sta1.passby_train[i] & sta2.passby_train[i];
                 int cnt = 0;
@@ -403,36 +399,14 @@ namespace sjtu {
                 }
 
             }
-//           for (int i = 0;i < cnt_train; ++i){
-//                pos1 = sta1.getval(i);
-//                pos2 = sta2.getval(i);
-//                //遍历可能会比较慢 可以改进
-//                if(pos1 && pos2 && pos1 < pos2){
-//                    offset = trainTree.search(trainID[i]);
-//                   DataBase.getElement((char*)&offset, getTrainID(i), sizeof(int), TRID);
-//                    offset = getTrainID(i);
-//                   fprintf(stderr, "~~~ %d %d\n", i, offset);
-//                    Train_val *tr = createTrainWithOffset(offset);
-//
-//                    int j = 0;
-//                    for(;j < len; ++j){
-//                        if(catalog[j] == tr->catalog[0])
-//                            break;
-//                    }
-//                    if(j == len)
-//                        continue;
-//                    trains.push_back(tr);
-//                }
-//
-//            }
-
 
             if(!trains.size()){
                 sprintf(ret,"0");
                 return;
             }
+
             sprintf(ret,"%d\n",trains.size());
-            std::sort(trains.begin(), trains.end(), trainCompare);
+            Quicksort(trains, 0, trains.size() - 1);
 
 
             for (int i = 0;i < trains.size(); ++i){
@@ -513,7 +487,6 @@ namespace sjtu {
                 return;
             }
             DataBase.getElement((char*)&sta2,offset2,STATION_SIZE,STATION);
-            // traverse all train
 
             for(int j = 0;j <= (cnt_train >> 5);++j) {
                 int bit_str = sta2.passby_train[j];
@@ -573,7 +546,6 @@ namespace sjtu {
                                 }
                                 if (ord_start == -1 || ord_transfer1 == -1)
                                     continue;
-//                                printf(">>> %d %d %d %d\n", ord_start, ord_transfer1, ord_transfer2, ord_end);
                                 short transfer_arrive = train1->getStation(ord_transfer1)->arrive;
                                 short transfer_start = train2->getStation(ord_transfer2)->start;
                                 if (transfer_arrive > transfer_start)
@@ -582,7 +554,6 @@ namespace sjtu {
                                 int arrive = train2->getStation(ord_end)->arrive;
                                 int whole_time = arrive - start;
                                 if (whole_time < minTime) {
-//                                info = nullptr;
                                     char time1[TIME_SIZE], time2[TIME_SIZE];
                                     intToTime(start, time1);
                                     intToTime(transfer_arrive, time2);
@@ -611,7 +582,6 @@ namespace sjtu {
                                             time1, train2->getStation(ord_end)->station_name,
                                             dat, time2);
                                     for (int p = 0; p < train1->price_num; ++p) {
-//                                    price = train2->getStation(ord_end)->price[p] - train1->getStation(ord_transfer2)->price[p];
                                         price = 0;
                                         for (int kk = ord_transfer2 + 1; kk <= ord_end; kk++) {
                                             price += train2->getStation(kk)->price[p];
@@ -693,7 +663,6 @@ namespace sjtu {
 
             DataBase.getElement((char*)&user, offset, USER_SIZE, USER);
             for (int off = user.getFirst(); off; ){
-//                printf("!!! %d\n", off);
                 DataBase.getElement((char*)&rec, off, RECORD_SIZE, RECORD);
                 int flag = 0;
                 for (int i = 0; i < calalen; i++) {
@@ -702,7 +671,6 @@ namespace sjtu {
                         break;
                     }
                 }
-//                printf("~~~~~~~ %d %d\n", dt, rec.getDate());
                 if (flag == 1 && dt == rec.getDate()) {
                     tot++;
                     int troff = trainTree.search(rec.trainid);
@@ -825,14 +793,12 @@ namespace sjtu {
             int len = getNextWord(cur, ID);
             int hashid = getID(ID);
             int troffset = trainTree.search(hashid);
-//            printf("~~~~~ %d %d\n", troffset, hashid);
             if(troffset == -1) {
                 sprintf(ret,"0");
                 return;
             }
 
             Train_val *val = createTrainWithOffset(troffset);
-//            printf("%d %d %d %d     ", troffset, val->if_sale, val->if_delete, val->station_num);
 
             if (!val->if_sale && !val->if_delete) {
                 val->if_sale = true;

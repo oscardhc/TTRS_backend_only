@@ -265,6 +265,13 @@ namespace sjtu {
 //            //TODO
 //        }
 
+        bool operator < (const Train_val a) const {
+            return strcmp(trainID, a.trainID) < 0;
+        }
+        bool operator <= (const Train_val a) const {
+            return strcmp(trainID, a.trainID) <= 0;
+        }
+
     };
     Train_val *createTrainWithOffset(int offset) {
         int stationNum = 0;
@@ -283,9 +290,6 @@ namespace sjtu {
     void deleteTrain(Train_val *tr) {
 //        fprintf(stderr, "\t\t\t d %llx\n", tr);
         operator delete((void*)tr);
-    }
-    bool trainCompare(const Train_val *a, const Train_val *b) {
-        return strcmp(a->trainID, b->trainID) < 0;
     }
 
 }
