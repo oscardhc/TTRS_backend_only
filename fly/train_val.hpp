@@ -92,7 +92,6 @@ namespace sjtu {
             len = getNextWord(inp,priceNum);
             inp += len;
             price_num = stringToInt(priceNum);
-//            printf("~~~~~~~ %d\n", price_num);
 
             for(int i = 0;i < price_num;++i){
                 len = getNextWord(inp,pricename[i]);
@@ -191,7 +190,6 @@ namespace sjtu {
 
             for(int j = cnt1 + 1; j <= cnt2; ++j)
                 getStation(j)->ticket[date][i] += num;
-            //TODO del ticket record
             return 1;
         }
         float buy(int num, char *inp, int userid, int trainid) {
@@ -276,20 +274,46 @@ namespace sjtu {
     Train_val *createTrainWithOffset(int offset) {
         int stationNum = 0;
         DataBase.getElement((char*)&stationNum, offset, sizeof(int), TRAIN);
-//        fprintf(stderr, "offset %d %d\n", offset, stationNum);
         void *ptr = operator new(TRAIN_SIZE + stationNum * LOC_SIZE);
         DataBase.getElement((char*)ptr, offset, TRAIN_SIZE + stationNum * LOC_SIZE, TRAIN);
         return (Train_val*) ptr;
     }
     Train_val *createTrain(char* trainid,char* Name,char* Catalog,int stationNum,char *inp,short ord) {
         void *ptr = operator new(TRAIN_SIZE + stationNum * LOC_SIZE);
-//        fprintf(stderr, "\t\t\t c %llx %d\n", ptr, stationNum);
         ((Train_val*) ptr)->init(trainid, Name, Catalog, stationNum, inp, ord);
         return (Train_val*) ptr;
     }
     void deleteTrain(Train_val *tr) {
 //        fprintf(stderr, "\t\t\t d %llx\n", tr);
         operator delete((void*)tr);
+    }
+    int* getNums(int offset) {
+        static int num[2];
+        DataBase.getElement((char*)&num, offset, sizeof(int) * 2, TRAIN);
+        return num;
+    }
+    char* getTrainStationName(int offset, int stN) {
+        static char name[LOCATION_SIZE + 1];
+        DataBase.getElement((char*)name, offset + TRAIN_SIZE + LOC_SIZE * (stN + 1) - LOCATION_SIZE - 1, LOCATION_SIZE + 1 , TRAIN);
+        return name;
+    }
+    char* getPriceName(int offset, int stN) {
+        static char name[TICKET_KIND_SIZE];
+        DataBase.getElement((char*)name, offset + TRAIN_SIZE - 2 * sizeof(bool) - (5 - stN) * TICKET_KIND_SIZE * sizeof(char) , TICKET_KIND_SIZE, TRAIN);
+        return name;
+    }
+    short getTicketLeft(int offset, int stN, int day, int tpN) {
+        short num = 0;
+        DataBase.getElement((char*)&num, offset + TRAIN_SIZE + LOC_SIZE * stN + sizeof(float) * 5 + sizeof(short) * (2 + day * 5 + tpN), sizeof(short), TRAIN);
+        return num;
+    }
+    void setTicketLeft(int offset, int stN, int day, int tpN, short num) {
+        DataBase.setElement((char*)&num, offset + TRAIN_SIZE + LOC_SIZE * stN + sizeof(float) * 5 + sizeof(short) * (2 + day * 5 + tpN), sizeof(short), TRAIN);
+    }
+    bool getSuitableForBuy(int offset) {
+        bool b[2];
+        DataBase.getElement((char*)b, offset + TRAIN_SIZE - 2 * sizeof(bool), sizeof(bool) * 2, TRAIN);
+        return b[0] == false && b[1] == true;
     }
 
 }

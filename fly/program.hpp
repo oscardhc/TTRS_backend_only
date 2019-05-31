@@ -55,53 +55,47 @@ namespace sjtu {
             int len = strlen(cmd);
             char word[30];
             commandLength = getNextWord(cmd, word);
-            if (strcmp(word, "exit") == 0) {
+            if (strcmp(word, "buy_ticket") == 0) {
+                execute_buyTicket();
+                return;
+            } else if (strcmp(word, "register") == 0) {
+                execute_register();
+                return;
+            } else if (strcmp(word, "modify_privilege") == 0) {
+                execute_modifyPrivilege();
+                return;
+            } else if (strcmp(word, "modify_profile") == 0) {
+                execute_modifyProfile();
+                return;
+            } else if (strcmp(word, "query_profile") == 0) {
+                execute_queryProfile();
+                return;
+            } else if (strcmp(word, "query_ticket") == 0) {
+                execute_queryTicket();
+                return;
+            } else if (strcmp(word, "add_train") == 0) {
+                execute_addTrain();
+                return;
+            } else if (strcmp(word, "sale_train") == 0) {
+                execute_saleTrain();
+                return;
+            } else if (strcmp(word, "exit") == 0) {
                 sprintf(ret, "BYE");
                 return;
             } else if (strcmp(word, "clean") == 0) {
                 clean();
                 return;
-            }
-                /*User command:*/
-            else if (strcmp(word, "register") == 0) {
-                execute_register();
-                return;
             } else if (strcmp(word, "login") == 0) {
                 execute_login();
                 return;
-            } else if (strcmp(word, "query_profile") == 0) {
-                execute_queryProfile();
-                return;
-            } else if (strcmp(word, "modify_profile") == 0) {
-                execute_modifyProfile();
-                return;
-            } else if (strcmp(word, "modify_privilege") == 0) {
-                execute_modifyPrivilege();
-                return;
-            }
-                /*Ticket command:*/
-            else if (strcmp(word, "query_ticket") == 0) {
-                execute_queryTicket();
-                return;
             } else if (strcmp(word, "query_transfer") == 0) {
                 execute_queryTransfer();
-                return;
-            } else if (strcmp(word, "buy_ticket") == 0) {
-                execute_buyTicket();
                 return;
             } else if (strcmp(word, "query_order") == 0) {
                 execute_queryOrder();
                 return;
             } else if (strcmp(word, "refund_ticket") == 0) {
                 execute_refundTicket();
-                return;
-            }
-                /*Train command:*/
-            else if (strcmp(word, "add_train") == 0) {
-                execute_addTrain();
-                return;
-            } else if (strcmp(word, "sale_train") == 0) {
-                execute_saleTrain();
                 return;
             } else if (strcmp(word, "query_train") == 0) {
                 execute_queryTrain();
@@ -112,10 +106,8 @@ namespace sjtu {
             } else if (strcmp(word, "modify_train") == 0) {
                 execute_modifyTrain();
                 return;
-            }
-            else {
+            } else {
                 sprintf(ret, "invaild word");
-//                exit(0);
             }
             return;
         }
@@ -404,6 +396,7 @@ namespace sjtu {
                             continue;
                         }
                         trains.push_back(tra);
+//                        fprintf(stderr, "OFFSET %d\n", offset);
                     }
                     bit >>= 1;
                     cnt ++;
@@ -419,6 +412,18 @@ namespace sjtu {
             sprintf(ret,"%d\n",trains.size());
             Quicksort(trains, 0, trains.size() - 1);
 
+//            for (int i = 0;i < trains.size(); ++i) {
+//                for (int jj = 0; jj < trains[i]->station_num; jj++) {
+//                    fprintf(stderr, "..%d %d.. ", i, jj);
+//                    for (int j = 1; j <= 30; j++) {
+//                        for (int k = 0; k < trains[i]->price_num; k++) {
+//                            fprintf(stderr, "[%d]%d ", (long long)(&(trains[i]->getStation(jj)->ticket[j][k])) - (long long)trains[i],trains[i]->getStation(jj)->ticket[j][k]);
+//                        }
+//                        fprintf(stderr, "  |  ");
+//                    }
+//                    fprintf(stderr, "\n");
+//                }
+//            }
 
             for (int i = 0;i < trains.size(); ++i){
                 int start = 0,end = 0;
@@ -617,6 +622,7 @@ namespace sjtu {
             sprintf(ret,"%s", info);
         }
         void execute_buyTicket() {
+            sprintf(ret,"0");
             char *cur = cmd + commandLength;
             char user_id[ID_SIZE], train_id[TRAIN_ID_SIZE];
             int num;
@@ -632,23 +638,75 @@ namespace sjtu {
             int hashid = getID(train_id);
             int offset = trainTree.search(hashid);
             if(offset == -1){
-                sprintf(ret,"0");
                 return;
+            }
+            if (!getSuitableForBuy(offset)) {
+                return;
+            }
+            int date;
+            char dateStr[DATE_SIZE];
+            char sta1[LOCATION_SIZE];
+            char sta2[LOCATION_SIZE];
+            char ticket_kind[TICKET_KIND_SIZE];
+
+            len = getNextWord(cur,sta1);
+            cur += len;
+            len = getNextWord(cur,sta2);
+            cur += len;
+            len = getNextWord(cur,dateStr);
+            date = dateToInt(dateStr);
+            cur += len;
+            len = getNextWord(cur,ticket_kind);
+            cur += len;
+
+            int i;//check if ticket_kind exists
+            int *nums = getNums(offset);
+            for (i = 0;i < nums[1];++i) {
+                char *tmp = getPriceName(offset, i);
+                if (strcmp(ticket_kind, tmp) == 0) break;
+            }
+            if (i == nums[1]) return;
+            int cnt1 = 0;//check loc1 and loc2 is exist
+            while(strcmp(getTrainStationName(offset, cnt1), sta1) != 0){
+                if (++cnt1 == nums[0])
+                    return;
+            }
+            int cnt2 = cnt1 + 1;
+            static short tickets[60];
+            while(1){
+                tickets[cnt2] = getTicketLeft(offset, cnt2, date, i);
+                if (strcmp(getTrainStationName(offset, cnt2), sta2) == 0) break;
+//                fprintf(stderr, "- %d %d\n", cnt2, tickets[cnt2]);
+                if (tickets[cnt2] < num || ++cnt2 == nums[0])
+                    return;
             }
 
-            Train_val *val = createTrainWithOffset(offset);
-            if (!val->if_sale || val->if_delete) {
-                sprintf(ret, "0");
-                return;
+            for(int j = cnt1 + 1; j <= cnt2; ++j) {
+//                fprintf(stderr, "%d %d %d\n", j, tickets[j], num);
+                setTicketLeft(offset, j, date, i, tickets[j] - num);
             }
-            float price = val->buy(num, cur, stringToInt(user_id), hashid);
-            if (price < 0) {
-                deleteTrain(val);
-                sprintf(ret, "0");
-                return;
+            if (DataBase.createElement(0, RECORD) == 4) {
+                int noff = DataBase.createElement(RECORD_SIZE, RECORD);
+                Record a(hashid, 'C', 0, i, date, cnt1, cnt2, num);
+                DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
             }
-            DataBase.setElement((char*)val, offset, TRAIN_SIZE + val->station_num * LOC_SIZE, TRAIN);
-            deleteTrain(val);
+
+
+//            Train_val *val = createTrainWithOffset(offset);
+//            if (!val->if_sale || val->if_delete) {
+//                sprintf(ret, "0");
+////                return;
+//            }
+//            float price = val->buy(num, cur, stringToInt(user_id), hashid);
+//            if (price < 0) {
+//                deleteTrain(val);
+//                sprintf(ret, "0");
+//                return;
+//            }
+//            DataBase.setElement((char*)val + TRAIN_SIZE, offset + TRAIN_SIZE, val->station_num * LOC_SIZE, TRAIN);
+//            deleteTrain(val);
+
+
             sprintf(ret, "1");
         }
         void execute_queryOrder() {
@@ -668,7 +726,7 @@ namespace sjtu {
             User_val user;
             int dt = dateToInt(date);
 
-            char tmp[10000];
+            static char tmp[10000];
             int tot = 0;
             tmp[0] = 0;
 
@@ -702,7 +760,6 @@ namespace sjtu {
                         sprintf(tmp + strlen(tmp), "%s %d %f ", val->pricename[j], j == rec.getType() ? rec.getQuantity() : 0, price);
                     }
                     sprintf(tmp + strlen(tmp), "\n");
-
                 }
                 off = rec.nxt;
             }

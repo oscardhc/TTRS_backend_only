@@ -6,6 +6,7 @@
 #include "utility.hpp"
 #include "station_val.hpp"
 #include "constant.hpp"
+#include "train_val.hpp"
 
 char cmd[1000],ret[50000];
 
@@ -75,10 +76,10 @@ inline void test4() {
 }
 inline void test5() {
 //    freopen("./stdout.txt", "w", stdout);
-    freopen("../../../test_kit/5/1.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/5/1.in", "r", stdin);
     work();
     fprintf(stderr, "1\n");
-    freopen("../../../test_kit/5/2.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/5/2.in", "r", stdin);
     work();
     fprintf(stderr, "2\n");
 }
@@ -92,33 +93,33 @@ inline void test6() {
     fprintf(stderr, "2\n");
 }
 inline void test7() {
-    freopen("./stdout.txt", "w", stdout);
-    freopen("../../../test_kit/7/1.in", "r", stdin);
+//    freopen("./stdout.txt", "w", stdout);
+    freopen("../../../TicketOffice/test_kit/7/1.in", "r", stdin);
     work();
     fprintf(stderr, "1\n");
-    freopen("../../../test_kit/7/2.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/7/2.in", "r", stdin);
     work();
     fprintf(stderr, "2\n");
 }
 inline void test8() {
     freopen("./stdout.txt", "w", stdout);
 //    freopen("./stderr.txt", "w", stderr);
-    freopen("../../../test_kit/8/1.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/8/1.in", "r", stdin);
     work();
     fprintf(stderr, "complete 1\n");
-    freopen("../../../test_kit/8/2.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/8/2.in", "r", stdin);
     work();
     fprintf(stderr, "complete 2\n");
-    freopen("../../../test_kit/8/3.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/8/3.in", "r", stdin);
     work();
     fprintf(stderr, "complete 3\n");
-    freopen("../../../test_kit/8/4.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/8/4.in", "r", stdin);
     work();
     fprintf(stderr, "complete 4\n");
-    freopen("../../../test_kit/8/5.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/8/5.in", "r", stdin);
     work();
     fprintf(stderr, "complete 5\n");
-    freopen("../../../test_kit/8/6.in", "r", stdin);
+    freopen("../../../TicketOffice/test_kit/8/6.in", "r", stdin);
     work();
     fprintf(stderr, "complete 6\n");
 }
@@ -198,9 +199,20 @@ inline void preRun() {
 //}
 
 int main(int argc, char** argv){
-//    test2();
-    work();
+//    printf("%d\n", sizeof(sjtu::Train_val::station));
+//    return 0;
+    test5();
+//    work();
     return 0;
+//    work();
+//    char *tmp = sjtu::getTrainStationName(4, 3);
+//    int ccc = sjtu::getStationNum(4);
+//    short left = sjtu::getTicketLeft(4, 2, 1, 1);
+//    sjtu::setTicketLeft(4, 2, 1, 1, 123);
+//    left = sjtu::getTicketLeft(4, 2, 1, 1);
+//    tmp = sjtu::getPriceName(4, 1);
+//    fprintf(stderr, "%d %s %d\n", ccc, tmp, left);
+//    return 0;
 //    if (argc > 1) {
 //        preRun();
 //        realWork();
