@@ -201,8 +201,8 @@ inline void preRun() {
 int main(int argc, char** argv){
 //    printf("%d\n", sizeof(sjtu::Train_val::station));
 //    return 0;
-    test5();
-//    work();
+//    test5();
+    work();
     return 0;
 //    work();
 //    char *tmp = sjtu::getTrainStationName(4, 3);
