@@ -135,8 +135,8 @@ namespace sjtu {
             quickPri->at(a) += (l << (b << 1));
             User_val tmp;
             DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
-            tmp.setPrivilege(l);
-            DataBase.setElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
+//            tmp.setPrivilege(l);
+//            DataBase.setElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
         }
 
         inline int getPri(int index) {
@@ -828,6 +828,7 @@ namespace sjtu {
                 deleteTrain(val);
                 sprintf(ret, "0");
             }
+            
         }
         void execute_queryTrain() {
             char *cur = cmd + commandLength;

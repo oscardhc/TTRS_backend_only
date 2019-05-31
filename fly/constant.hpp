@@ -12,7 +12,7 @@ namespace sjtu{
   const int USER_NAME_SIZE = 41 - 24;
   const int PASSWORD_SIZE = 21;
   const int EMAIL_SIZE = 21;
-  const int PHONE_SIZE = 21;
+  const int PHONE_SIZE = 21 - 8;
   const int ID_SIZE = 21;
   const int LOCATION_SIZE = 21;
   const int DATE_SIZE = 11;

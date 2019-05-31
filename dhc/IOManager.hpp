@@ -18,10 +18,9 @@
 // 8K per page (There should be NO elements with sizes exceeding 8K)
 const int pageSize = 8192;
 // Bufferpool size: 8K * 128 = 1M
-const int bufferSize = 1450;
-const int hotListSize = 100;
-const int coldListSize = bufferSize - hotListSize;
+const int maxBufferSize = 1450;
 
+const int FILE_CNT = 6;
 enum FOR_FILE{BPT = 0, USER = 1, TRAIN = 2, STATION = 3, TRID = 4, RECORD = 5};
 
 namespace sjtu {
@@ -29,13 +28,14 @@ namespace sjtu {
     class IOManager {
     private:
         char tmp[pageSize];
-        char pool[bufferSize][pageSize];
+        char *pool[maxBufferSize];
         int poolAge;
         int totalQuery, hitQuery;
+        int _bufferSize;
 
         int fileCount;
-        FILE *file[10];
-        int fileSize[10];
+        FILE *file[FILE_CNT];
+        int fileSize[FILE_CNT];
 
         struct Node {
             int index; // Page id (1,2,3...) in hard drive file
@@ -64,6 +64,7 @@ namespace sjtu {
 
     public:
         IOManager(int _cnt) {
+            _bufferSize = 150;
             fileCount = _cnt;
             char filename[10];
             for (int i = 0; i < fileCount; i++) {
@@ -77,9 +78,12 @@ namespace sjtu {
                     fwrite((char*)(&fileSize[i]), sizeof(int), 1, file[i]);
                 }
             }
+            for (int i = 0; i < _bufferSize; i++) {
+                pool[i] = new char[pageSize];
+            }
             totalQuery = hitQuery = 0;
-            memset(pool, 0, sizeof(pool));
-            for (int i = 0; i < bufferSize; i++) {
+//            memset(pool, 0, sizeof(pool));
+            for (int i = 0; i < _bufferSize; i++) {
                 Node *node = new Node();
                 node->index = - i - 1;
                 node->value = i;
@@ -117,6 +121,9 @@ namespace sjtu {
 //                std::filesystem::resize_file(filename, fileSize[i]);
                 truncate(filename, fileSize[i]);
             }
+            for (int i = 0; i < _bufferSize; i++) {
+                delete[] pool[i];
+            }
             fprintf(stderr, "TOTAL %u HIT %u RATIO %lf\n", totalQuery, hitQuery, 1.0 * hitQuery / totalQuery);
         }
         void flushToDisk(Node* node) {
@@ -140,6 +147,21 @@ namespace sjtu {
         }
         Node* getAvailableMemory(int forIndex) {
             Node* node = getLastPage();
+            if (node->index > 0) {
+                if (_bufferSize < maxBufferSize) {
+                    for (int i = 0; i < 100; i++) {
+                        pool[i + _bufferSize] = new char[pageSize];
+                        Node *node = new Node();
+                        node->index = - i - _bufferSize - 1;
+                        node->value = i + _bufferSize;
+                        node->age = -i;
+                        node->isEdited = -1;
+                        ageMap.insert(node->age, node);
+                        idxMap.insert(node->index, node);
+                    }
+                    _bufferSize += 100;
+                }
+            }
 //            ageMap.erase(ageMap.find(node->age));
 //            idxMap.erase(idxMap.find(node->index));
             ageMap.remove(node->age);
