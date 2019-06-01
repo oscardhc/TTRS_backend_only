@@ -23,8 +23,8 @@ namespace sjtu {
             short start;
             // stopover time can be calculated by arrive and start time
             // and never be used any more
-            short ticket[31][5];//TODO
-            char station_name[LOCATION_SIZE + 1];
+            short ticket[30][5];//TODO
+            char station_name[LOCATION_SIZE - 1];
             // save the ticket on date i from this station to previous station
             char* setInp(char *inp, int price_num, int special, short lastTime) {
                 char time[TIME_SIZE];
@@ -60,7 +60,7 @@ namespace sjtu {
                     inp += len;
                     sscanf(buff, "%f", &price[i]);
                 }
-                for (int i = 0; i <= 30; i++) {
+                for (int i = 0; i < 30; i++) {
                     for (int j = 0; j < price_num; j++) {
                         ticket[i][j] = MAXTICKET;
                     }
@@ -293,8 +293,8 @@ namespace sjtu {
         return num;
     }
     char* getTrainStationName(int offset, int stN) {
-        static char name[LOCATION_SIZE + 1];
-        DataBase.getElement((char*)name, offset + TRAIN_SIZE + LOC_SIZE * (stN + 1) - LOCATION_SIZE - 1, LOCATION_SIZE + 1 , TRAIN);
+        static char name[LOCATION_SIZE - 1];
+        DataBase.getElement((char*)name, offset + TRAIN_SIZE + LOC_SIZE * (stN + 1) - LOCATION_SIZE + 1, LOCATION_SIZE - 1 , TRAIN);
         return name;
     }
     char* getPriceName(int offset, int stN) {

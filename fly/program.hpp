@@ -283,48 +283,6 @@ namespace sjtu {
                 return;
             }
 
-
-//            User_val val1;
-//            int offset1 = calculateOffset(ID1, userCurId);
-//            if (offset1 == -1) {
-//                sprintf(ret, "0");
-//                return;
-//            }
-//            DataBase.getElement((char*)&val1,offset1,USER_SIZE,USER);
-//            p_id1 = val1.getPrivilege();
-//            if (p_id1 == 1 || p_id1 == 0) {
-//                sprintf(ret, "0");
-//                return;
-//            }
-//            idlen = skipWhiteSpace(cur);
-//            cur += idlen;
-//            sscanf(cur, "%d", &privil);
-//            User_val val2;
-//            int offset2 = calculateOffset(ID2, userCurId);
-//            if (offset2 == -1) {
-//                sprintf(ret, "0");
-//                return;
-//            }
-//            DataBase.getElement((char*)&val2,offset2,USER_SIZE,USER);
-//            p_id2 = val2.getPrivilege();
-//            if (p_id2 == 2) {
-//                if (privil == 2) {
-//                    sprintf(ret, "1");
-//                    return;
-//                } else {
-//                    sprintf(ret, "0");
-//                    return;
-//                }
-//            }
-//            if (p_id2 == 1) {
-//                if (privil == 2) {
-//                    val2.setPrivilege(2);
-//                    DataBase.setElement((char*)&val2,offset2,USER_SIZE,USER);
-//                }
-//                sprintf(ret, "1");
-//                return;
-//            }
-//            sprintf(ret, "0");
         }
 
         /*Ticket word*/
@@ -358,7 +316,6 @@ namespace sjtu {
             int offset;
             int pos1,pos2;//loc1's num in the train
 
-//            std::vector<Train_val*> trains;
             sjtu::vector<Train_val*> trains;
 
             for (int i = 0;i < 186; ++i){
@@ -396,7 +353,6 @@ namespace sjtu {
                             continue;
                         }
                         trains.push_back(tra);
-//                        fprintf(stderr, "OFFSET %d\n", offset);
                     }
                     bit >>= 1;
                     cnt ++;
@@ -411,19 +367,6 @@ namespace sjtu {
 
             sprintf(ret,"%d\n",trains.size());
             Quicksort(trains, 0, trains.size() - 1);
-
-//            for (int i = 0;i < trains.size(); ++i) {
-//                for (int jj = 0; jj < trains[i]->station_num; jj++) {
-//                    fprintf(stderr, "..%d %d.. ", i, jj);
-//                    for (int j = 1; j <= 30; j++) {
-//                        for (int k = 0; k < trains[i]->price_num; k++) {
-//                            fprintf(stderr, "[%d]%d ", (long long)(&(trains[i]->getStation(jj)->ticket[j][k])) - (long long)trains[i],trains[i]->getStation(jj)->ticket[j][k]);
-//                        }
-//                        fprintf(stderr, "  |  ");
-//                    }
-//                    fprintf(stderr, "\n");
-//                }
-//            }
 
             for (int i = 0;i < trains.size(); ++i){
                 int start = 0,end = 0;
@@ -459,7 +402,7 @@ namespace sjtu {
                         if (ticketNum > trains[i]->getStation(j)->ticket[dateToInt(date)][k])
                             ticketNum = trains[i]->getStation(j)->ticket[dateToInt(date)][k];
                     }
-                    sprintf(ret + strlen(ret)," %s %d %f",trains[i]->pricename[k],ticketNum,price);
+                    sprintf(ret + strlen(ret)," %s %d %.2f",trains[i]->pricename[k],ticketNum,price);
                 }
                 if (i != trains.size() - 1) {
                     sprintf(ret + strlen(ret), "\n");
@@ -834,11 +777,9 @@ namespace sjtu {
 
             int noff = DataBase.createElement(sizeof(int), TRID);
             DataBase.setElement((char*)&offset, noff, sizeof(int), TRID);
-//            fprintf(stderr, "%d %d %d %d\n", cnt_train, getTrainID(cnt_train - 1), noff, offset);
             getTrainID(cnt_train - 1);
 
             DataBase.setElement((char*)val,offset,TRAIN_SIZE + stationNum * LOC_SIZE, TRAIN);
-//            fprintf(stderr, "%d %d         %d %d %d\n", hashid, offset, NODE_SIZE, sizeof(LeafNode), sizeof(InterNode));
             trainTree.insert(hashid,offset);
 
             station_val tmp;
@@ -847,7 +788,6 @@ namespace sjtu {
                 int id = getID(val->getStation(i)->station_name);
                 if (stationTree.search(id) == -1) {
                     int off = DataBase.createElement(STATION_SIZE, STATION);
-//                    fprintf(stderr, "new for %s %d %d\n", val->getStation(i)->station_name, id, off);
                     DataBase.setElement((char*)&tmp, off, STATION_SIZE, STATION);
                     stationTree.insert(id, off);
                 }

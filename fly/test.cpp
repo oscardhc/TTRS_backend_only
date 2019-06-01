@@ -199,9 +199,8 @@ inline void preRun() {
 //}
 
 int main(int argc, char** argv){
-//    printf("%d\n", sizeof(sjtu::Train_val::station));
 //    return 0;
-//    test5();
+//    test8();
     work();
     return 0;
 //    work();

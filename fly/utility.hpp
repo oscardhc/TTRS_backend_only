@@ -48,10 +48,10 @@ namespace sjtu{
         short ret = 0;
         (ret *= 10) += (date[8] - '0');
         (ret *= 10) += (date[9] - '0');
-        return ret;
+        return ret - 1;
     }
     void intToDate(const int &inte,char *date){
-        if (inte == 31) {
+        if (inte == 30) {
             sprintf(date, "2019-07-01");
             return;
         }
@@ -63,8 +63,8 @@ namespace sjtu{
         date[5] = '0';
         date[6] = '6';
         date[7] = '-';
-        date[8] = (char)((inte / 10) % 10) + '0';
-        date[9] = (char)(inte % 10) + '0';
+        date[8] = (char)(((inte + 1) / 10) % 10) + '0';
+        date[9] = (char)((inte + 1) % 10) + '0';
         date[10] = 0;
     }
 
