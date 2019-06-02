@@ -125,10 +125,10 @@ namespace sjtu {
             while (quickPri->size() <= a) quickPri->push_back(0u);
             quickPri->at(a) &= (~0u - (3u << (b << 1)));
             quickPri->at(a) += (l << (b << 1));
-//            User_val tmp;
-//            DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
-//            tmp.setPrivilege(l);
-//            DataBase.setElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
+           User_val tmp;
+           DataBase.getElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
+           tmp.setPrivilege(l);
+           DataBase.setElement((char*)&tmp, calculateOffset(index, userCurId), USER_SIZE, USER);
         }
 
         inline int getPri(int index) {
