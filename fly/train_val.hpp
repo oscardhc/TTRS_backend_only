@@ -237,16 +237,14 @@ namespace sjtu {
             }
             //TODO add ticket record
 
-//            static User_val val;
-//            int offset = calculateOffset(userid, 9999999);
-//            DataBase.getElement((char*)&val, offset, USER_SIZE, USER);
-            if (DataBase.createElement(0, RECORD) == 4) {
-                int noff = DataBase.createElement(RECORD_SIZE, RECORD);
-                Record a(trainid, catalog[0], 0, i, date, cnt1, cnt2, num);
-                DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
-            }
-//            val.setFirst(noff);
-//            DataBase.setElement((char*)&val, offset, USER_SIZE, USER);
+           static User_val val;
+           int offset = calculateOffset(userid, 9999999);
+           DataBase.getElement((char*)&val, offset, USER_SIZE, USER);
+            int noff = DataBase.createElement(RECORD_SIZE, RECORD);
+            Record a(trainid, catalog[0], 0, i, date, cnt1, cnt2, num);
+            DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
+           val.setFirst(noff);
+           DataBase.setElement((char*)&val, offset, USER_SIZE, USER);
             return price;
         }
         short getSurplus(int start,int end,int cata,int dat){
