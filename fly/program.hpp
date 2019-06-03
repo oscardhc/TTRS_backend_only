@@ -640,7 +640,7 @@ namespace sjtu {
             int noff = DataBase.createElement(RECORD_SIZE, RECORD);
             // fprintf(stderr, "~~~~~ %d\n", val.getFirst());
             Record a(hashid, getCata(offset), val.getFirst(), i, date, cnt1, cnt2, num);
-            fprintf("!!! %c\n", getCata(offset));
+            // fprintf("!!! %c\n", getCata(offset));
             DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
            val.setFirst(noff);
            DataBase.setElement((char*)&val, uoff, USER_SIZE, USER);
