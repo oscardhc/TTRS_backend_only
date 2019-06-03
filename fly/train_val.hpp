@@ -241,7 +241,8 @@ namespace sjtu {
            int offset = calculateOffset(userid, 9999999);
            DataBase.getElement((char*)&val, offset, USER_SIZE, USER);
             int noff = DataBase.createElement(RECORD_SIZE, RECORD);
-            Record a(trainid, catalog[0], 0, i, date, cnt1, cnt2, num);
+            // fprintf(stderr, "~~~~~ %d\n", val.getFirst());
+            Record a(trainid, catalog[0], val.getFirst(), i, date, cnt1, cnt2, num);
             DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
            val.setFirst(noff);
            DataBase.setElement((char*)&val, offset, USER_SIZE, USER);
