@@ -516,7 +516,7 @@ namespace sjtu {
                                     char time1[TIME_SIZE], time2[TIME_SIZE];
                                     intToTime(start, time1);
                                     intToTime(transfer_arrive, time2);
-                                    sprintf(info + strlen(info), "%s %s %s %s %s %s %s ", train1->trainID,
+                                    sprintf(info + strlen(info), "%s %s %s %s %s %s %s", train1->trainID,
                                             train1->getStation(ord_start)->station_name, dat,
                                             time1, train1->getStation(ord_transfer1)->station_name,
                                             dat, time2);
@@ -527,7 +527,7 @@ namespace sjtu {
                                             price += train1->getStation(kk)->price[p];
                                         }
                                         sprintf(info + strlen(info),
-                                                "%s %d %f ",
+                                                " %s %d %f",
                                                 train1->pricename[p],
                                                 train1->getSurplus(ord_start, ord_transfer1, date, i),
                                                 price);
@@ -536,7 +536,7 @@ namespace sjtu {
 
                                     intToTime(transfer_start, time1);
                                     intToTime(arrive, time2);
-                                    sprintf(info + strlen(info), "%s %s %s %s %s %s %s ", train2->trainID,
+                                    sprintf(info + strlen(info), "%s %s %s %s %s %s %s", train2->trainID,
                                             train2->getStation(ord_transfer2)->station_name, dat,
                                             time1, train2->getStation(ord_end)->station_name,
                                             dat, time2);
@@ -546,7 +546,7 @@ namespace sjtu {
                                             price += train2->getStation(kk)->price[p];
                                         }
                                         sprintf(info + strlen(info),
-                                                "%s %d %f ",
+                                                " %s %d %.2f",
                                                 train2->pricename[p],
                                                 train2->getSurplus(ord_transfer2, ord_end, date, i),
                                                 price);
@@ -628,11 +628,22 @@ namespace sjtu {
 //                fprintf(stderr, "%d %d %d\n", j, tickets[j], num);
                 setTicketLeft(offset, j, date, i, tickets[j] - num);
             }
-            if (DataBase.createElement(0, RECORD) == 4) {
-                int noff = DataBase.createElement(RECORD_SIZE, RECORD);
-                Record a(hashid, 'C', 0, i, date, cnt1, cnt2, num);
-                DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
-            }
+            // if (DataBase.createElement(0, RECORD) == 4) {
+            //     int noff = DataBase.createElement(RECORD_SIZE, RECORD);
+            //     Record a(hashid, 'C', 0, i, date, cnt1, cnt2, num);
+            //     DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
+            // }
+
+            static User_val val;
+           int uoff = calculateOffset(stringToInt(user_id), 9999999);
+           DataBase.getElement((char*)&val, uoff, USER_SIZE, USER);
+            int noff = DataBase.createElement(RECORD_SIZE, RECORD);
+            // fprintf(stderr, "~~~~~ %d\n", val.getFirst());
+            Record a(hashid, getCata(offset), val.getFirst(), i, date, cnt1, cnt2, num);
+            fprintf("!!! %c\n", getCata(offset));
+            DataBase.setElement((char*)&a, noff, RECORD_SIZE, RECORD);
+           val.setFirst(noff);
+           DataBase.setElement((char*)&val, uoff, USER_SIZE, USER);
 
 
 //            Train_val *val = createTrainWithOffset(offset);

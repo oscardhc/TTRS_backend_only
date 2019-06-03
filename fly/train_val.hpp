@@ -314,6 +314,11 @@ namespace sjtu {
         DataBase.getElement((char*)b, offset + TRAIN_SIZE - 2 * sizeof(bool), sizeof(bool) * 2, TRAIN);
         return b[0] == false && b[1] == true;
     }
+    char getCata(int offset) {
+        char cata[2];
+        DataBase.getElement((char*)cata, offset + TRAIN_SIZE - 2 * sizeof(bool) - 5 * TICKET_KIND_SIZE * sizeof(char) - 2 * sizeof(char), 2 * sizeof(char), TRAIN);
+        return cata[0];
+    }
 
 }
 
